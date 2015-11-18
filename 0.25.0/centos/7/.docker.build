@@ -1,0 +1,4 @@
+# Define the default tag to use for building
+
+TAG=docker.io/clarsonneur/mesos-slave:0.25.0-centos-7
+

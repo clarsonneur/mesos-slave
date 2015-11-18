@@ -1,21 +1,20 @@
-FROM centos:7
+FROM centos:7-systemd
 
 RUN rpm -i http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm && \
-yum -y install mesos-0.25.0
+yum -y install mesos-0.25.0 && yum clean all ; \
+systemctl disable mesos-master ; systemctl enable mesos-slave ; > /etc/default/mesos-slave ; rm -f /etc/mesos/zk
 
 # http://docs.docker.com/installation/centos/
-RUN curl -fLsS https://get.docker.com/ | sh
+RUN curl -fLsS https://get.docker.com/ | sh ; yum clean all
 
-CMD ["/usr/sbin/mesos-slave"]
-
-ENV MESOS_WORK_DIR /tmp/mesos
-ENV MESOS_CONTAINERIZERS docker,mesos
+ENV MESOS_WORK_DIR=/tmp/mesos MESOS_CONTAINERIZERS=docker,mesos MESOS_EXECUTOR_REGISTRATION_TIMEOUT=5mins
 
 # https://mesosphere.github.io/marathon/docs/native-docker.html
-ENV MESOS_EXECUTOR_REGISTRATION_TIMEOUT 5mins
+# ENV MESOS_EXECUTOR_REGISTRATION_TIMEOUT 5mins
 
 VOLUME /tmp/mesos
 
 COPY entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
+CMD /usr/sbin/init
